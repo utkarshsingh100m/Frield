@@ -1,0 +1,69 @@
+{
+  "manifest_version": 3,
+  "name": "Frield — AI Cybersecurity",
+  "short_name": "Frield",
+  "version": "1.0.0",
+  "description": "AI-powered email threat detection, blockchain vault, and password manager. Protect your inbox from phishing and malware.",
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "32":  "icons/icon32.png",
+      "48":  "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Frield — AI Cybersecurity"
+  },
+
+  "icons": {
+    "16":  "icons/icon16.png",
+    "32":  "icons/icon32.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "alarms",
+    "notifications",
+    "clipboardWrite"
+  ],
+
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://accounts.google.com/*",
+    "https://ui-avatars.com/*"
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "pages/*.html",
+        "css/*.css",
+        "js/*.js",
+        "icons/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' https://cdn.jsdelivr.net https://accounts.google.com; object-src 'self'"
+  }
+}

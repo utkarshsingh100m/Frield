@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — Frield</title>
+  <meta name="description" content="Frield settings — manage your subscription, profile, and security preferences." />
+  <meta name="theme-color" content="#0D1117" />
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-text">FRIELD</div>
+        <span class="logo-badge">v1.0</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item"><span class="icon">📊</span> Dashboard</a>
+      <a href="email-list.html" class="nav-item"><span class="icon">📧</span> Email Inbox <span class="nav-badge danger" id="dangerCount">−</span></a>
+      <a href="vault.html" class="nav-item"><span class="icon">🔐</span> Vault Ledger <span class="nav-badge neon">Chain</span></a>
+      <div class="nav-section-label" style="margin-top:8px;">Account</div>
+      <a href="settings.html" class="nav-item active"><span class="icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <img class="user-avatar" id="userAvatar" src="" alt="Avatar" />
+        <div class="user-info">
+          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-email" id="userEmail">...</div>
+        </div>
+        <span class="plan-badge pro" id="planBadge">PRO</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="top-bar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn btn-ghost btn-icon" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="top-bar-title" style="font-size:18px;font-weight:700;">Settings</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <div class="page-content" style="max-width:800px;width:100%;">
+
+      <!-- Profile Card -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="section-title">👤 Profile</div>
+          <span class="badge badge-pro" id="profilePlanBadge">PRO</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px;" id="profileSection">
+          <img id="profileAvatar" src="" alt="Avatar" style="width:64px;height:64px;border-radius:50%;border:3px solid var(--neon);box-shadow:0 0 16px var(--neon-glow);" />
+          <div>
+            <div style="font-size:20px;font-weight:700;" id="profileName">Loading...</div>
+            <div style="font-size:14px;color:var(--text-muted);margin-top:2px;" id="profileEmail">...</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="profileJoined">Member since ...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subscription Plans -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="section-title">💳 Subscription Plan</div></div>
+        <div style="margin-bottom:20px;padding:14px;background:var(--bg-secondary);border-radius:var(--radius-sm);" id="usageSection">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;">
+            <span style="color:var(--text-secondary);">Daily Scan Usage</span>
+            <span style="font-family:'JetBrains Mono',monospace;" id="usageText">-- / --</span>
+          </div>
+          <div style="height:8px;background:var(--bg-primary);border-radius:4px;overflow:hidden;">
+            <div id="usageBar" style="height:100%;background:var(--neon);border-radius:4px;width:0%;transition:width 0.6s ease;"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;" id="usageNote">Loading...</div>
+        </div>
+        <div class="plan-cards">
+          <!-- Free Plan -->
+          <div class="plan-card" id="freePlanCard">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div class="plan-name">Free</div>
+              <span class="badge" id="freeBadge">CURRENT</span>
+            </div>
+            <div class="plan-price">$0<span>/mo</span></div>
+            <ul class="plan-features">
+              <li class="included">50 email scans/day</li><li class="included">AI threat scoring</li><li class="included">Basic dashboard</li>
+              <li class="excluded">Blockchain Vault</li><li class="excluded">API access</li><li class="excluded">Priority support</li>
+            </ul>
+            <button class="btn btn-ghost" style="width:100%;" disabled id="freeBtn">Current Plan</button>
+          </div>
+          <!-- Pro Plan -->
+          <div class="plan-card" id="proPlanCard">
+            <div style="position:absolute;top:-1px;right:16px;background:var(--neon);color:var(--bg-primary);font-size:10px;font-weight:700;padding:3px 10px;border-radius:0 0 8px 8px;letter-spacing:0.5px;">RECOMMENDED</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div class="plan-name" style="color:var(--neon);">Pro</div>
+              <span class="badge badge-pro" id="proBadge" style="display:none;">CURRENT</span>
+            </div>
+            <div class="plan-price" style="color:var(--neon);">$9<span>/mo</span></div>
+            <ul class="plan-features">
+              <li class="included">Unlimited scans</li><li class="included">AI threat scoring</li><li class="included">Full dashboard</li>
+              <li class="included">Blockchain Vault</li><li class="included">API access</li><li class="included">Priority support</li>
+            </ul>
+            <button class="btn btn-primary" style="width:100%;" id="upgradeBtn" onclick="upgradeToPro()">⚡ Upgrade to Pro</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gmail Integration -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="section-title">📧 Gmail Integration</div>
+          <span class="badge" id="gmailStatusBadge">DISCONNECTED</span>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:24px;text-align:center;">
+          <div id="gmailConnectedState" style="display:none;">
+            <div style="font-size:48px;margin-bottom:12px;">✅</div>
+            <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Gmail Connected</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Frield is automatically monitoring your inbox for threats.</div>
+            <div style="display:flex;justify-content:center;gap:12px;">
+              <button class="btn btn-primary btn-sm" onclick="syncGmailNow()" id="syncGmailBtn">🔄 Sync Now</button>
+              <button class="btn btn-outline btn-sm" onclick="disconnectGmail()">🔌 Disconnect</button>
+            </div>
+          </div>
+          <div id="gmailDisconnectedState">
+            <div style="font-size:48px;margin-bottom:12px;">📩</div>
+            <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Connect Your Gmail</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Securely connect your Gmail to enable real-time AI threat scanning.</div>
+            <button class="btn btn-primary" onclick="connectGmail()">
+              <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" style="width:18px;height:18px;margin-right:8px;vertical-align:middle;" />
+              Connect Gmail Account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Preferences -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="section-title">🔧 Security Preferences</div></div>
+        <div class="setting-row">
+          <div><div class="setting-label">Auto-Filter Dangerous Emails</div><div class="setting-desc">Automatically move dangerous emails to a quarantine folder</div></div>
+          <label class="toggle"><input type="checkbox" id="autoFilter" checked /><div class="toggle-track"></div></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Real-Time Browser Monitoring</div><div class="setting-desc">Monitor visited URLs and downloaded files for threats</div></div>
+          <label class="toggle"><input type="checkbox" id="browserMonitor" checked /><div class="toggle-track"></div></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Desktop Notifications</div><div class="setting-desc">Get alerted when a dangerous email is detected</div></div>
+          <label class="toggle"><input type="checkbox" id="notifications" /><div class="toggle-track"></div></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Weekly Threat Report</div><div class="setting-desc">Receive a weekly summary of threats detected in your inbox</div></div>
+          <label class="toggle"><input type="checkbox" id="weeklyReport" checked /><div class="toggle-track"></div></label>
+        </div>
+        <div style="margin-top:12px;"><button class="btn btn-primary btn-sm" onclick="saveSettings()">💾 Save Preferences</button></div>
+      </div>
+
+      <!-- API Key Section -->
+      <div class="card" style="margin-bottom:20px;" id="apiSection">
+        <div class="card-header">
+          <div class="section-title">🔑 API Access</div>
+          <span class="badge badge-pro">PRO ONLY</span>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--neon);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span id="apiKey">frield_sk_••••••••••••••••••••••••</span>
+          <button class="btn btn-ghost btn-sm" onclick="revealApiKey()" id="revealBtn">👁 Reveal</button>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">Use this key between API calls. Treat it like a password.</div>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="copyApiKey()">📋 Copy Key</button>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="card" style="border-color:rgba(255,71,87,0.2);">
+        <div class="card-header"><div class="section-title" style="color:var(--danger);">⚠️ Danger Zone</div></div>
+        <div class="setting-row">
+          <div><div class="setting-label">Delete All Email Records</div><div class="setting-desc">Permanently remove all scanned email history</div></div>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('emails')">Delete History</button>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Clear Vault Ledger</div><div class="setting-desc">Remove all blocks from the hash-chain ledger</div></div>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('vault')">Clear Vault</button>
+        </div>
+        <div class="setting-row" style="border-bottom:none;">
+          <div><div class="setting-label">Delete Account</div><div class="setting-desc">Permanently delete your account and all data</div></div>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('account')">Delete Account</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="../js/api.js"></script>
+<script src="../js/settings.js"></script>
+</body>
+</html>

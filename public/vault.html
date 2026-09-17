@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vault — Frield</title>
+  <meta name="description" content="Frield Vault — blockchain file integrity ledger and encrypted password manager." />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0D1117" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ── Tab Switcher ── */
+    .vault-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+    .vault-tab {
+      padding: 8px 20px;
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+    }
+    .vault-tab.active {
+      background: var(--bg-tertiary);
+      color: var(--neon);
+      border: 1px solid var(--border-neon);
+      box-shadow: 0 0 8px rgba(0,255,127,0.1);
+    }
+    .vault-tab:hover:not(.active) { color: var(--text-primary); }
+
+    /* ── Password Table ── */
+    .pw-strength-bar { height: 3px; border-radius: 2px; margin-top: 4px; }
+    .master-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 200;
+    }
+    .master-overlay.open { display: flex; }
+    .master-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 0 40px rgba(0,255,127,0.1);
+    }
+    .pw-show-btn { cursor: pointer; background: none; border: none; color: var(--text-muted); font-size: 16px; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+
+        <div class="logo-text">FRIELD</div>
+        <span class="logo-badge">v1.0</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item"><span class="icon">📊</span> Dashboard</a>
+      <a href="email-list.html" class="nav-item"><span class="icon">📧</span> Email Inbox <span class="nav-badge danger" id="dangerCount">−</span></a>
+      <a href="vault.html" class="nav-item active"><span class="icon">🔐</span> Vault <span class="nav-badge neon">Secure</span></a>
+      <div class="nav-section-label" style="margin-top:8px;">Account</div>
+      <a href="settings.html" class="nav-item"><span class="icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <img class="user-avatar" id="userAvatar" src="" alt="Avatar" />
+        <div class="user-info">
+          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-email" id="userEmail">...</div>
+        </div>
+        <span class="plan-badge pro" id="planBadge">PRO</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn btn-ghost btn-icon" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="top-bar-title" style="font-size:18px;font-weight:700;">Vault</div>
+          <div style="font-size:11px;color:var(--text-muted);" id="vaultSubtitle">Blockchain integrity & password manager</div>
+        </div>
+      </div>
+      <div class="top-bar-actions" id="topBarActions">
+        <!-- filled by tab switch -->
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Tab Switcher -->
+      <div class="vault-tabs">
+        <button class="vault-tab active" id="tab-chain" onclick="switchTab('chain')">🔗 Hash Chain</button>
+        <button class="vault-tab" id="tab-passwords" onclick="switchTab('passwords')">🔑 Password Manager</button>
+      </div>
+
+      <!-- ══ HASH CHAIN TAB ══════════════════════════════════════ -->
+      <div id="panel-chain">
+        <!-- Chain Stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+          <div class="stat-card safe"><span class="stat-icon">🛡</span><div class="stat-value" id="validCount">--</div><div class="stat-label">Valid Blocks</div></div>
+          <div class="stat-card danger"><span class="stat-icon">⚠️</span><div class="stat-value" id="tamperedCount">0</div><div class="stat-label">Tampered</div></div>
+          <div class="stat-card total"><span class="stat-icon">🔗</span><div class="stat-value" id="totalBlocks">--</div><div class="stat-label">Total Blocks</div></div>
+        </div>
+
+        <!-- Info Banner -->
+        <div style="background:rgba(0,255,127,0.05);border:1px solid var(--border-neon);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;">
+          <span style="font-size:20px;">🔗</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--neon);margin-bottom:4px;">Hash-Chain Integrity System</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">
+              Each block is cryptographically linked via SHA-256 hashing. If any file is modified, its hash won't match and the block is flagged <strong style="color:var(--danger);">TAMPERED</strong>.
+            </div>
+          </div>
+        </div>
+
+        <!-- Ledger Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="section-title">📋 Ledger Entries</div>
+            <span style="font-size:12px;color:var(--text-muted);" id="ledgerCount">Loading...</span>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Block #</th><th>Filename</th><th>SHA-256 Hash</th><th>Previous Hash</th><th>Timestamp</th><th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vaultTbody">
+                <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);"><span class="spinner"></span> Loading vault...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PASSWORD MANAGER TAB ══════════════════════════════════ -->
+      <div id="panel-passwords" style="display:none;">
+
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+          <div class="stat-card safe"><span class="stat-icon">🔑</span><div class="stat-value" id="pwSavedCount">--</div><div class="stat-label">Saved Passwords</div></div>
+          <div class="stat-card total"><span class="stat-icon">🔒</span><div class="stat-value">AES-256</div><div class="stat-label">Encryption</div></div>
+          <div class="stat-card total"><span class="stat-icon">🧠</span><div class="stat-value">PBKDF2</div><div class="stat-label">Key Derivation</div></div>
+        </div>
+
+        <!-- Info Banner -->
+        <div style="background:rgba(0,148,255,0.06);border:1px solid rgba(0,148,255,0.2);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;">
+          <span style="font-size:20px;">🛡</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#60a5fa;margin-bottom:4px;">End-to-End Encrypted</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">
+              Passwords are encrypted with <strong>AES-256-GCM</strong> in your browser before sending to the server. Your master password never leaves your device. Frield cannot read your passwords.
+            </div>
+          </div>
+        </div>
+
+        <!-- Search + Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="section-title">🔑 Saved Credentials</div>
+            <span style="font-size:12px;color:var(--text-muted);" id="pwCount">Loading...</span>
+          </div>
+
+          <div style="padding:0 16px 12px;">
+            <input class="form-input" id="pwSearch" placeholder="🔍  Search by site or username…" oninput="filterPasswords(this.value)" style="max-width:340px;" />
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Site</th><th>Username</th><th>Password</th><th>Added</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="pwTbody">
+                <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);"><span class="spinner"></span> Unlocking vault…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.page-content -->
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────── -->
+<!-- Master Password Overlay -->
+<div class="master-overlay" id="masterPromptOverlay">
+  <div class="master-card">
+    <div style="font-size:28px;text-align:center;margin-bottom:8px;">🔐</div>
+    <div style="font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;">Unlock Password Vault</div>
+    <div style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:20px;line-height:1.5;">
+      Enter your master password to encrypt / decrypt credentials. It never leaves your device.
+    </div>
+    <div class="form-group">
+      <label class="form-label">Master Password</label>
+      <div style="position:relative;">
+        <input class="form-input" id="masterPwInput" type="password" placeholder="Enter master password…" onkeydown="if(event.key==='Enter') document.getElementById('masterPwConfirmBtn').click()" />
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:4px;" id="masterPwConfirmBtn">🔓 Unlock Vault</button>
+    <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:14px;">
+      ⚠ First-time users: choose a strong master password and remember it — it cannot be recovered.
+    </div>
+  </div>
+</div>
+
+<!-- Add File Modal (Hash Chain) -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    <div class="modal-title">🔐 Add File to Vault</div>
+    <div class="modal-sub">Create a new hash-chain block for file integrity tracking</div>
+    <div class="form-group">
+      <label class="form-label">Filename *</label>
+      <input class="form-input" id="vaultFilename" placeholder="e.g. document.pdf, config.json" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">File Content / Identity String</label>
+      <textarea class="form-textarea" id="vaultContent" placeholder="Paste file content or a unique identifier string to hash..."></textarea>
+    </div>
+    <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:12px;color:var(--text-muted);">
+      💡 The SHA-256 hash will be computed from this content and chained to the last block.
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addToVault()">🔗 Add to Chain</button>
+    </div>
+    <div id="addResult" style="display:none;margin-top:12px;padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);font-size:12px;"></div>
+  </div>
+</div>
+
+<!-- Block Detail Modal -->
+<div class="modal-overlay" id="blockModal">
+  <div class="modal" style="max-width:680px;">
+    <button class="modal-close" onclick="closeModal('blockModal')">✕</button>
+    <div class="modal-title">🔐 Block Details</div>
+    <div id="blockDetail" style="font-size:13px;"></div>
+  </div>
+</div>
+
+<!-- Add Password Modal -->
+<div class="modal-overlay" id="addPwModal">
+  <div class="modal" style="max-width:460px;">
+    <button class="modal-close" onclick="closeModal('addPwModal')">✕</button>
+    <div class="modal-title">🔑 Save New Password</div>
+    <div class="modal-sub">Encrypted with AES-256-GCM before leaving your device</div>
+
+    <div class="form-group">
+      <label class="form-label">Site Name *</label>
+      <input class="form-input" id="addPwSite" placeholder="e.g. Google, GitHub, Netflix" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Site URL</label>
+      <input class="form-input" id="addPwUrl" placeholder="https://example.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Username / Email *</label>
+      <input class="form-input" id="addPwUser" placeholder="your@email.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password *</label>
+      <div style="position:relative;">
+        <input class="form-input" id="addPwPass" type="password" placeholder="Enter or paste password" style="padding-right:40px;" />
+        <button class="pw-show-btn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);" onclick="toggleInputType('addPwPass')">👁</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-ghost" onclick="closeModal('addPwModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewPassword()">🔒 Save Encrypted</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden CSV File Input -->
+<input type="file" id="csvFileInput" accept=".csv" style="display:none;" />
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js"></script>
+<script src="js/vault.js"></script>
+<script src="js/passwords.js"></script>
+<script>
+// ── Tab Switching ──────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('panel-chain').style.display     = tab === 'chain'     ? '' : 'none';
+  document.getElementById('panel-passwords').style.display = tab === 'passwords' ? '' : 'none';
+  document.getElementById('tab-chain').classList.toggle('active',     tab === 'chain');
+  document.getElementById('tab-passwords').classList.toggle('active', tab === 'passwords');
+  document.getElementById('vaultSubtitle').textContent =
+    tab === 'chain' ? 'Hash-chain file integrity ledger' : 'Encrypted password manager';
+
+  const actions = document.getElementById('topBarActions');
+  if (tab === 'chain') {
+    actions.innerHTML = `
+      <button class="btn btn-outline btn-sm" onclick="verifyAll()" id="verifyBtn">🔍 Verify All Hashes</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add File</button>
+    `;
+  } else {
+    actions.innerHTML = `
+      <button class="btn btn-outline btn-sm" onclick="importFromBrowser()">🌐 Import from Browser</button>
+      <button class="btn btn-outline btn-sm" onclick="openCsvImport()">📂 Import CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddPasswordModal()">+ Add Password</button>
+    `;
+    loadPasswords();
+  }
+}
+
+function toggleInputType(id) {
+  const el = document.getElementById(id);
+  if (el) el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+// Set initial top bar actions for chain tab
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('topBarActions').innerHTML = `
+    <button class="btn btn-outline btn-sm" onclick="verifyAll()" id="verifyBtn">🔍 Verify All Hashes</button>
+    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add File</button>
+  `;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Inbox — Frield</title>
+  <meta name="description" content="Frield email threat analysis — view, filter, and reclassify scanned emails." />
+  <meta name="theme-color" content="#0D1117" />
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-text">FRIELD</div>
+        <span class="logo-badge">v1.0</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item"><span class="icon">📊</span> Dashboard</a>
+      <a href="email-list.html" class="nav-item active"><span class="icon">📧</span> Email Inbox <span class="nav-badge danger" id="dangerCount">...</span></a>
+      <a href="vault.html" class="nav-item"><span class="icon">🔐</span> Vault Ledger <span class="nav-badge neon">Chain</span></a>
+      <div class="nav-section-label" style="margin-top:8px;">Account</div>
+      <a href="settings.html" class="nav-item"><span class="icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <img class="user-avatar" id="userAvatar" src="" alt="Avatar" />
+        <div class="user-info">
+          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-email" id="userEmail">...</div>
+        </div>
+        <span class="plan-badge pro" id="planBadge">PRO</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn btn-ghost btn-icon" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="top-bar-title" style="font-size:18px;font-weight:700;">Email Inbox</div>
+          <div style="font-size:11px;color:var(--text-muted);" id="emailCount">Loading...</div>
+        </div>
+      </div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openClassifyModal()">+ Scan New Email</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadEmails()">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="card">
+        <!-- Filter Tabs -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setFilter('ALL', this)">All</button>
+            <button class="filter-tab f-safe" onclick="setFilter('SAFE', this)">✅ Safe</button>
+            <button class="filter-tab f-suspicious" onclick="setFilter('SUSPICIOUS', this)">⚠️ Suspicious</button>
+            <button class="filter-tab f-dangerous" onclick="setFilter('DANGEROUS', this)">🚨 Dangerous</button>
+          </div>
+          <input class="form-input" style="width:220px;padding:7px 12px;" placeholder="🔍 Search sender or subject..." id="searchInput" oninput="filterTable()" />
+        </div>
+
+        <!-- Emails Table -->
+        <div class="table-wrapper">
+          <table id="emailTable">
+            <thead>
+              <tr>
+                <th>Score</th><th>Status</th><th>Sender</th><th>Subject</th>
+                <th>SPF/DKIM/DMARC</th><th>Links</th><th>Received</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="emailTbody">
+              <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);"><span class="spinner"></span> Loading emails...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Email Detail Modal -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal" style="max-width:650px;">
+    <button class="modal-close" onclick="closeModal('emailModal')">✕</button>
+    <div class="modal-title" id="modalSubject">Email Subject</div>
+    <div class="modal-sub" id="modalSender">sender@example.com</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;" id="modalAuthGrid"></div>
+    <div style="margin-bottom:16px;" id="modalScoreSection"></div>
+    <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:13px;line-height:1.7;max-height:160px;overflow-y:auto;color:var(--text-secondary);" id="modalBody">Loading email body...</div>
+    <div id="modalLinks" style="margin-bottom:16px;"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--border);">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('emailModal')">Close</button>
+      <button class="btn btn-outline btn-sm" id="markSafeBtn">✅ Mark Safe</button>
+      <button class="btn btn-danger btn-sm" id="markDangerBtn">🚨 Mark Dangerous</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scan New Email Modal -->
+<div class="modal-overlay" id="classifyModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('classifyModal')">✕</button>
+    <div class="modal-title">🔍 Scan New Email</div>
+    <div class="modal-sub">Submit email metadata for AI threat analysis</div>
+    <div class="form-group"><label class="form-label">Sender Email *</label><input class="form-input" id="newSender" placeholder="attacker@suspicious.xyz" /></div>
+    <div class="form-group"><label class="form-label">Subject *</label><input class="form-input" id="newSubject" placeholder="URGENT: Verify your account now" /></div>
+    <div class="form-group"><label class="form-label">Body Text</label><textarea class="form-textarea" id="newBody" placeholder="Email body content..."></textarea></div>
+    <div class="form-group"><label class="form-label">Links (comma-separated)</label><input class="form-input" id="newLinks" placeholder="http://phish.xyz/login, http://malware.tk/exe" /></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;" class="form-group">
+      <div><label class="form-label">SPF</label><select class="form-select" id="newSpf"><option value="pass">Pass</option><option value="fail">Fail</option><option value="unknown">Unknown</option></select></div>
+      <div><label class="form-label">DKIM</label><select class="form-select" id="newDkim"><option value="pass">Pass</option><option value="fail">Fail</option></select></div>
+      <div><label class="form-label">DMARC</label><select class="form-select" id="newDmarc"><option value="pass">Pass</option><option value="fail">Fail</option></select></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('classifyModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitClassify()">🧠 Analyze Threat</button>
+    </div>
+    <div id="classifyResult" style="display:none;margin-top:16px;padding:14px;background:var(--bg-secondary);border-radius:var(--radius-sm);"></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="../js/api.js"></script>
+<script src="../js/email.js"></script>
+</body>
+</html>

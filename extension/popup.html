@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Frield</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 380px;
+        min-height: 200px;
+        max-height: 600px;
+        overflow-y: auto;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+      }
+
+      /* ── Popup Header ── */
+      .popup-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px 12px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-secondary);
+      }
+      .popup-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .popup-logo-icon {
+        width: 30px;
+        height: 30px;
+        background: var(--neon-glow);
+        border: 1px solid var(--border-neon);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+      .popup-logo-text {
+        font-size: 14px;
+        font-weight: 800;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--neon);
+        letter-spacing: 2px;
+      }
+      .popup-status-pill {
+        font-size: 10px;
+        font-weight: 600;
+        font-family: "JetBrains Mono", monospace;
+        padding: 3px 10px;
+        border-radius: 20px;
+        border: 1px solid var(--border-neon);
+        background: var(--neon-glow);
+        color: var(--neon);
+      }
+      .popup-status-pill.offline {
+        color: var(--danger);
+        background: var(--danger-glow);
+        border-color: rgba(255, 71, 87, 0.3);
+      }
+
+      /* ── Login State ── */
+      #loginState {
+        padding: 32px 20px;
+        text-align: center;
+      }
+      .login-shield {
+        font-size: 48px;
+        margin-bottom: 12px;
+        display: block;
+      }
+      #loginState h2 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      #loginState p {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+
+      /* ── Main State ── */
+      #mainState {
+        display: none;
+      }
+
+      /* ── User Row ── */
+      .popup-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border);
+      }
+      .popup-user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--border-neon);
+      }
+      .popup-user-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .popup-user-info .name {
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .popup-user-info .email {
+        font-size: 10px;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .popup-plan-badge {
+        font-size: 9px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 10px;
+        background: var(--neon-glow);
+        color: var(--neon);
+        border: 1px solid var(--border-neon);
+      }
+
+      /* ── Threat Stats ── */
+      .threat-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+      .threat-stat {
+        padding: 12px 8px;
+        text-align: center;
+        background: var(--bg-primary);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .threat-stat:hover {
+        background: var(--bg-secondary);
+      }
+      .threat-stat .ts-value {
+        font-size: 22px;
+        font-weight: 800;
+        font-family: "JetBrains Mono", monospace;
+        line-height: 1;
+      }
+      .threat-stat .ts-label {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 3px;
+        font-weight: 500;
+      }
+      .threat-stat.safe .ts-value {
+        color: var(--safe);
+      }
+      .threat-stat.warn .ts-value {
+        color: var(--warning);
+      }
+      .threat-stat.danger .ts-value {
+        color: var(--danger);
+      }
+
+      /* ── Scan This Page ── */
+      .scan-section {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .scan-section .scan-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .scan-result {
+        margin-top: 10px;
+        padding: 10px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        font-size: 11px;
+        line-height: 1.6;
+        display: none;
+      }
+
+      /* ── Nav Links ── */
+      .popup-nav {
+        padding: 8px 0;
+      }
+      .popup-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        font-size: 13px;
+        color: var(--text-primary);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+      }
+      .popup-nav-item:hover {
+        background: var(--bg-secondary);
+      }
+      .popup-nav-item .nav-icon {
+        font-size: 15px;
+        width: 20px;
+        text-align: center;
+      }
+      .popup-nav-item .nav-text {
+        flex: 1;
+        font-weight: 500;
+      }
+      .popup-nav-item .nav-badge {
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 10px;
+      }
+      .popup-nav-sep {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 0;
+      }
+      .popup-nav-item.logout {
+        color: var(--danger);
+      }
+      .popup-nav-item.logout:hover {
+        background: rgba(255, 71, 87, 0.06);
+      }
+
+      /* ── Footer ── */
+      .popup-footer {
+        padding: 10px 16px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--bg-secondary);
+      }
+      .popup-footer .version {
+        font-size: 10px;
+        color: var(--text-muted);
+        font-family: "JetBrains Mono", monospace;
+      }
+      .popup-footer .server-status {
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+      .popup-footer .server-status.ok {
+        color: var(--safe);
+      }
+      .popup-footer .server-status.err {
+        color: var(--danger);
+      }
+
+      /* Loading */
+      .popup-loading {
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+
+      /* Spinner */
+      .mini-spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(0, 255, 127, 0.2);
+        border-top-color: var(--neon);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+        margin-right: 4px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .btn-popup {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 16px;
+        border-radius: 8px;
+        border: none;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        width: 100%;
+      }
+      .btn-popup-primary {
+        background: var(--neon);
+        color: #0d1117;
+      }
+      .btn-popup-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+      .btn-popup-outline {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+        width: auto;
+        flex: 1;
+      }
+      .btn-popup-outline:hover {
+        border-color: var(--neon);
+        color: var(--neon);
+      }
+      .btn-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* Recent threats list */
+      .recent-threats {
+        padding: 4px 16px 8px;
+      }
+      .recent-title {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+      .threat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(48, 54, 61, 0.4);
+        font-size: 11px;
+      }
+      .threat-item:last-child {
+        border-bottom: none;
+      }
+      .threat-item .ti-icon {
+        font-size: 13px;
+      }
+      .threat-item .ti-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .threat-item .ti-subject {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .threat-item .ti-sender {
+        font-size: 10px;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .threat-item .ti-score {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--danger);
+        flex-shrink: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="popup-logo">
+        <div class="popup-logo-icon">🛡</div>
+        <span class="popup-logo-text">FRIELD</span>
+      </div>
+      <span class="popup-status-pill" id="statusPill">🟢 PROTECTED</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="popup-loading" id="loadingState">
+      <span class="mini-spinner"></span> Connecting to Frield server...
+    </div>
+
+    <!-- Login State -->
+    <div id="loginState" style="display: none">
+      <span class="login-shield">🛡</span>
+      <h2>Welcome to Frield</h2>
+      <p>
+        Sign in to protect your inbox from phishing, malware, and cyber threats
+        using AI.
+      </p>
+      <button class="btn-popup btn-popup-primary" onclick="openLoginPage()">
+        🔐 Sign In with Google
+      </button>
+      <p style="margin-top: 14px; font-size: 10px; color: var(--text-muted)">
+        Server must be running at localhost:3000
+      </p>
+    </div>
+
+    <!-- Main State (logged in) -->
+    <div id="mainState" style="display: none">
+      <!-- User row -->
+      <div class="popup-user">
+        <img class="popup-user-avatar" id="popupAvatar" src="" alt="Avatar" />
+        <div class="popup-user-info">
+          <div class="name" id="popupName">Loading...</div>
+          <div class="email" id="popupEmail">...</div>
+        </div>
+        <span class="popup-plan-badge" id="popupPlan">FREE</span>
+      </div>
+
+      <!-- Threat Stats -->
+      <div class="threat-stats">
+        <div
+          class="threat-stat safe"
+          onclick="openPage('email-list.html?filter=SAFE')"
+        >
+          <div class="ts-value" id="statSafe">--</div>
+          <div class="ts-label">Safe</div>
+        </div>
+        <div
+          class="threat-stat warn"
+          onclick="openPage('email-list.html?filter=SUSPICIOUS')"
+        >
+          <div class="ts-value" id="statSusp">--</div>
+          <div class="ts-label">Suspicious</div>
+        </div>
+        <div
+          class="threat-stat danger"
+          onclick="openPage('email-list.html?filter=DANGEROUS')"
+        >
+          <div class="ts-value" id="statDanger">--</div>
+          <div class="ts-label">Dangerous</div>
+        </div>
+      </div>
+
+      <!-- Scan This Page -->
+      <div class="scan-section">
+        <div class="scan-title">🔍 Current Page</div>
+        <div class="btn-row">
+          <button
+            class="btn-popup btn-popup-outline"
+            id="scanBtn"
+            onclick="scanCurrentPage()"
+          >
+            🧠 Scan This Page
+          </button>
+          <button
+            class="btn-popup btn-popup-outline"
+            onclick="openPage('email-list.html')"
+          >
+            📧 Email Inbox
+          </button>
+        </div>
+        <div class="scan-result" id="scanResult"></div>
+      </div>
+
+      <!-- Recent Dangerous Threats -->
+      <div class="recent-threats" id="recentThreats" style="display: none">
+        <div class="recent-title">🚨 Recent Threats</div>
+        <div id="recentList"></div>
+      </div>
+
+      <!-- Nav -->
+      <div class="popup-nav">
+        <button class="popup-nav-item" onclick="openPage('dashboard.html')">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Security Dashboard</span>
+        </button>
+        <button class="popup-nav-item" onclick="openPage('email-list.html')">
+          <span class="nav-icon">📧</span>
+          <span class="nav-text">Email Inbox</span>
+          <span
+            class="nav-badge"
+            id="dangerBadge"
+            style="
+              background: rgba(255, 71, 87, 0.2);
+              color: var(--danger);
+              display: none;
+            "
+          ></span>
+        </button>
+        <button class="popup-nav-item" onclick="openPage('vault.html')">
+          <span class="nav-icon">🔐</span>
+          <span class="nav-text">Vault Ledger</span>
+          <span
+            class="nav-badge"
+            style="
+              background: var(--neon-glow);
+              color: var(--neon);
+              border: 1px solid var(--border-neon);
+            "
+            >Chain</span
+          >
+        </button>
+        <button class="popup-nav-item" onclick="openPage('settings.html')">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Settings</span>
+        </button>
+        <div class="popup-nav-sep"></div>
+        <button class="popup-nav-item logout" onclick="doLogout()">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-text">Sign Out</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="popup-footer">
+      <span class="version">v1.0.0</span>
+      <span class="server-status" id="serverStatus">Checking server...</span>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Frield</title>
+  <meta name="description" content="Frield Security Dashboard — monitor email threats, view charts and recent dangerous emails." />
+  <meta name="theme-color" content="#0D1117" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-text">FRIELD</div>
+        <span class="logo-badge">v1.0</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item active"><span class="icon">📊</span> Dashboard</a>
+      <a href="email-list.html" class="nav-item"><span class="icon">📧</span> Email Inbox <span class="nav-badge danger" id="dangerCount">...</span></a>
+      <a href="vault.html" class="nav-item"><span class="icon">🔐</span> Vault Ledger <span class="nav-badge neon">Chain</span></a>
+      <div class="nav-section-label" style="margin-top:8px;">Account</div>
+      <a href="settings.html" class="nav-item"><span class="icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card" id="userCard">
+        <img class="user-avatar" id="userAvatar" src="" alt="Avatar" />
+        <div class="user-info">
+          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-email" id="userEmail">...</div>
+        </div>
+        <span class="plan-badge pro" id="planBadge">PRO</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="top-bar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn btn-ghost btn-icon" onclick="document.getElementById('sidebar').classList.toggle('open')" id="menuBtn">☰</button>
+        <div>
+          <div class="top-bar-title" style="font-size:18px;font-weight:700;">Security Dashboard</div>
+          <div style="font-size:11px;color:var(--text-muted);" id="lastScan">Last scan: just now</div>
+        </div>
+      </div>
+      <div class="top-bar-actions">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon);background:var(--neon-glow);padding:4px 12px;border-radius:20px;border:1px solid var(--border-neon);">
+          🟢 PROTECTED
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="refreshDashboard()">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Stat Cards -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card total"><span class="stat-icon">📬</span><div class="stat-value" id="totalEmails">--</div><div class="stat-label">Total Scanned</div><div class="stat-sub">All time</div></div>
+        <div class="stat-card safe"><span class="stat-icon">✅</span><div class="stat-value" id="safeEmails">--</div><div class="stat-label">Safe</div><div class="stat-sub">No threats detected</div></div>
+        <div class="stat-card warning"><span class="stat-icon">⚠️</span><div class="stat-value" id="suspiciousEmails">--</div><div class="stat-label">Suspicious</div><div class="stat-sub">Needs review</div></div>
+        <div class="stat-card danger"><span class="stat-icon">🚨</span><div class="stat-value" id="dangerousEmails">--</div><div class="stat-label">Dangerous</div><div class="stat-sub">Blocked or flagged</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-container">
+          <div class="chart-title">📊 Threat Distribution</div>
+          <canvas id="pieChart" height="220"></canvas>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">📈 Threat Timeline (Last 14 Days)</div>
+          <canvas id="lineChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- Recent Dangerous Emails -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="section-title">🚨 Recent Dangerous Emails</div>
+            <div class="section-sub" style="font-size:12px;color:var(--text-muted);">High-priority threats requiring immediate attention</div>
+          </div>
+          <a href="email-list.html" class="btn btn-outline btn-sm">View All →</a>
+        </div>
+        <div id="dangerList">
+          <div class="empty-state"><div class="empty-icon">🔍</div><p>Loading threat data...</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="../js/api.js"></script>
+<script src="../js/dashboard.js"></script>
+</body>
+</html>
